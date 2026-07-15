@@ -1,4 +1,5 @@
-export const CONTRACT_ID = "CCCGQQORMNCIJDSXWVHT2A5GBP5F2WQ6LELO4GTHYSYTM53AMNVDE7ET";
+export const CONTRACT_ID = "CBFVVG4JCPACM24QDURZ3RAC3HI3OZEPUYFV6UCM5FKLRMTNTTSIUXVY";
+export const REWARDS_CONTRACT_ID = "CAGRVBNENLGRGAFJV46IZQTDQRONZ2LFFLVOF6CEBJKJQ2S23AQWR2WX";
 export const NETWORK_PASSPHRASE = "Test SDF Network ; September 2015";
 export const RPC_URL = "https://soroban-testnet.stellar.org";
-export const POLL_OPTIONS = ["Stellar", "Ethereum", "Solana"];
+export const POLL_OPTIONS = ["Stellar", "Ethereum"];

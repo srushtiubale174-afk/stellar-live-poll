@@ -16,11 +16,12 @@ import {
 } from '@stellar/stellar-sdk';
 import './App.css';
 
-const CONTRACT_ID = 'CCCGQQORMNCIJDSXWVHT2A5GBP5F2WQ6LELO4GTHYSYTM53AMNVDE7ET';
+const CONTRACT_ID = 'CBFVVG4JCPACM24QDURZ3RAC3HI3OZEPUYFV6UCM5FKLRMTNTTSIUXVY';
+const REWARDS_CONTRACT_ID = 'CAGRVBNENLGRGAFJV46IZQTDQRONZ2LFFLVOF6CEBJKJQ2S23AQWR2WX';
 const RPC_URL = 'https://soroban-testnet.stellar.org';
 const NETWORK_PASSPHRASE = Networks.TESTNET;
 
-const OPTIONS = ['Stellar', 'Ethereum', 'Solana'];
+const OPTIONS = ['Stellar', 'Ethereum'];
 
 const kit = new StellarWalletsKit({
   network: WalletNetwork.TESTNET,
@@ -34,6 +35,9 @@ function App() {
   const [txStatus, setTxStatus] = useState('idle');
   const [errorMsg, setErrorMsg] = useState('');
   const [lastTxHash, setLastTxHash] = useState('');
+  const [rewardPoints, setRewardPoints] = useState(0);
+  const [loadingResults, setLoadingResults] = useState(true);
+  const [loadingRewards, setLoadingRewards] = useState(false);
 
   const connectWallet = async () => {
     setErrorMsg('');
@@ -55,6 +59,7 @@ function App() {
   };
 
   const fetchResults = async () => {
+    setLoadingResults(true);
     try {
       const server = new rpc.Server(RPC_URL);
       const contract = new Contract(CONTRACT_ID);
@@ -77,6 +82,39 @@ function App() {
       }
     } catch (err) {
       console.error('Fetch results error:', err);
+      setErrorMsg('Results load nahi ho paye. Network check karo.');
+    } finally {
+      setLoadingResults(false);
+    }
+  };
+
+  const fetchRewardPoints = async () => {
+    if (!address) return;
+    setLoadingRewards(true);
+    try {
+      const server = new rpc.Server(RPC_URL);
+      const contract = new Contract(REWARDS_CONTRACT_ID);
+      const account = await server.getAccount(address);
+
+      const tx = new TransactionBuilder(account, {
+        fee: BASE_FEE,
+        networkPassphrase: NETWORK_PASSPHRASE,
+      })
+        .addOperation(
+          contract.call('get_voter_points', Address.fromString(address).toScVal())
+        )
+        .setTimeout(30)
+        .build();
+
+      const sim = await server.simulateTransaction(tx);
+      if (sim.result) {
+        const native = scValToNative(sim.result.retval);
+        setRewardPoints(Number(native));
+      }
+    } catch (err) {
+      console.error('Fetch reward points error:', err);
+    } finally {
+      setLoadingRewards(false);
     }
   };
 
@@ -163,6 +201,7 @@ function App() {
       if (status === 'SUCCESS') {
         setTxStatus('success');
         fetchResults();
+        fetchRewardPoints();
       } else {
         console.error('Final tx status:', status);
         setTxStatus('fail');
@@ -179,6 +218,12 @@ function App() {
     fetchResults();
   }, []);
 
+  useEffect(function () {
+    if (address) {
+      fetchRewardPoints();
+    }
+  }, [address]);
+
   return (
     <div className="app">
       <h1>Live Poll: Best Blockchain?</h1>
@@ -190,31 +235,40 @@ function App() {
       )}
 
       {address && (
-        <p className="address">
-          Connected: {address.slice(0, 6)}...{address.slice(-6)}
-        </p>
+        <div className="wallet-info">
+          <p className="address">
+            Connected: {address.slice(0, 6)}...{address.slice(-6)}
+          </p>
+          <p className="rewards">
+            🏆 Reward Points: {loadingRewards ? 'Loading...' : rewardPoints}
+          </p>
+        </div>
       )}
 
       {errorMsg && <p className="error">{errorMsg}</p>}
 
-      <div className="options">
-        {OPTIONS.map(function (option) {
-          return (
-            <div key={option} className="option-row">
-              <button onClick={function () { vote(option); }} disabled={txStatus === 'pending'}>
-                Vote for {option}
-              </button>
-              <span className="count">{results[option] || 0} votes</span>
-            </div>
-          );
-        })}
-      </div>
+      {loadingResults ? (
+        <p className="status pending">Loading poll results...</p>
+      ) : (
+        <div className="options">
+          {OPTIONS.map(function (option) {
+            return (
+              <div key={option} className="option-row">
+                <button onClick={function () { vote(option); }} disabled={txStatus === 'pending'}>
+                  Vote for {option}
+                </button>
+                <span className="count">{results[option] || 0} votes</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {txStatus === 'pending' && <p className="status pending">Transaction pending...</p>}
 
       {txStatus === 'success' && (
         <p className="status success">
-          Vote successful! Check the explorer link below.
+          Vote successful! You earned 10 reward points.
           <br />
           <a href={'https://stellar.expert/explorer/testnet/tx/' + lastTxHash} target="_blank" rel="noreferrer">
             View on Explorer
@@ -222,7 +276,7 @@ function App() {
         </p>
       )}
 
-      {txStatus === 'fail' && <p className="status fail">Transaction failed.</p>}
+      {txStatus === 'fail' && <p className="status fail">Transaction failed. Please try again.</p>}
     </div>
   );
 }
