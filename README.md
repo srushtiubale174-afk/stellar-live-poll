@@ -188,13 +188,15 @@ Visit `http://localhost:5173`
 
 \- \*\*CI/CD:\*\* GitHub Actions
 
-
-
 \## 🔗 Live Demo
 
 
 
-\[Add Vercel/Netlify link here after deployment]
+\*\*Live App:\*\* https://stellar-live-poll-pied.vercel.app
+
+
+
+Try it out: connect your Freighter wallet (testnet), cast a vote, and watch your reward points update in real time.
 
 
 
