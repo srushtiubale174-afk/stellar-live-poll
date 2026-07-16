@@ -158,51 +158,7 @@ cargo test
 
 
 
-\### Frontend
 
-```bash
+## 📹 Demo Video
 
-cd poll-frontend
-
-npm install
-
-npm run dev
-
-```
-
-Visit `http://localhost:5173`
-
-
-
-\## 📱 Tech Stack
-
-
-
-\- \*\*Smart Contracts:\*\* Rust, Soroban SDK
-
-\- \*\*Frontend:\*\* React, Vite
-
-\- \*\*Wallet Integration:\*\* Stellar Wallets Kit (Freighter)
-
-\- \*\*Network:\*\* Stellar Testnet
-
-\- \*\*CI/CD:\*\* GitHub Actions
-
-\## 🔗 Live Demo
-
-
-
-\*\*Live App:\*\* https://stellar-live-poll-pied.vercel.app
-
-
-
-Try it out: connect your Freighter wallet (testnet), cast a vote, and watch your reward points update in real time.
-
-
-
-\## 📹 Demo Video
-
-
-
-\[Add demo video link here]
-
+Watch the full demo here: [https://youtu.be/EoYr87WA-8k]
